@@ -18,6 +18,14 @@ from nltk.stem.wordnet import WordNetLemmatizer
 from .inflect.english import English
 
 
+import torch
+import torch.serialization
+
+torch.serialization.add_safe_globals(
+    [np.core.multiarray._reconstruct, np.dtype]  # the one that fails first  # often needed next
+)
+
+
 class BaseDialect(object):
     def __init__(self, lexical_swaps={}, morphosyntax=True, seed=None):
         self.string = ""

@@ -1,10 +1,20 @@
-from collections import defaultdict
-
 import geopy.distance
 import numpy as np
 import pandas as pd
 
 from .BaseDialect import BaseDialect
+
+import torch
+
+_orig_load = torch.load
+
+
+def _patched_load(*args, **kwargs):
+    kwargs.setdefault("weights_only", False)  # explicit opt-out
+    return _orig_load(*args, **kwargs)
+
+
+torch.load = _patched_load
 
 
 class DialectFromVector(BaseDialect):
