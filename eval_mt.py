@@ -24,9 +24,7 @@ device = 3 if "1.3B" in CKPT else 1
 def dialect_factory(dialect):
     def dialect_transform(examples):
         D = dialect(morphosyntax=True)
-        examples["src"] = [
-            D.convert_sae_to_dialect(src_text) for src_text in examples["src"]
-        ]
+        examples["src"] = [D.convert_sae_to_dialect(src_text) for src_text in examples["src"]]
         return examples
 
     return dialect_transform
@@ -44,9 +42,7 @@ def flatten_factory(target):
 
 def translate_factory(pipe):
     def translate(examples):
-        examples["tgt_pred"] = [
-            out["translation_text"] for out in pipe(examples["src"], batch_size=16)
-        ]
+        examples["tgt_pred"] = [out["translation_text"] for out in pipe(examples["src"], batch_size=16)]
         return examples
 
     return translate

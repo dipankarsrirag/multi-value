@@ -20,9 +20,4 @@ if __name__ == "__main__":
 
     while True:
         example = input("Enter an input in SAE: ")
-        print(
-            "After "
-            + converter.dialect_name
-            + ": "
-            + converter.convert_sae_to_dialect(example)
-        )
+        print("After " + converter.dialect_name + ": " + converter.convert_sae_to_dialect(example))

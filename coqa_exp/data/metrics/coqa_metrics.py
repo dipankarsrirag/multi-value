@@ -57,9 +57,7 @@ def compute_predictions_logits(
     all_nbest_json = collections.OrderedDict()
     scores_diff_json = collections.OrderedDict()
 
-    for (example_index, example) in enumerate(
-        tqdm(all_examples, desc="Writing preditions")
-    ):
+    for example_index, example in enumerate(tqdm(all_examples, desc="Writing preditions")):
         features = example_index_to_features[example_index]
 
         prelim_predictions = []
@@ -79,7 +77,7 @@ def compute_predictions_logits(
         ) = (-1, -1, -1, -1)
         # the paragraph slice with min null score
 
-        for (feature_index, feature) in enumerate(features):
+        for feature_index, feature in enumerate(features):
             result = unique_id_to_result[feature.unique_id]
             # TIP：GET score of y / n / u / s /e
             feature_yes_score, feature_no_score, feature_unk_score = (
@@ -87,9 +85,9 @@ def compute_predictions_logits(
                 result.no_logits[0] * 2,
                 result.unk_logits[0] * 2,
             )
-            start_indexes, end_indexes = _get_best_indexes(
-                result.start_logits, n_best_size
-            ), _get_best_indexes(result.end_logits, n_best_size)
+            start_indexes, end_indexes = _get_best_indexes(result.start_logits, n_best_size), _get_best_indexes(
+                result.end_logits, n_best_size
+            )
 
             for start_index in start_indexes:
                 for end_index in end_indexes:
@@ -108,9 +106,7 @@ def compute_predictions_logits(
                     length = end_index - start_index + 1
                     if length > max_answer_length:
                         continue
-                    feature_span_score = (
-                        result.start_logits[start_index] + result.end_logits[end_index]
-                    )
+                    feature_span_score = result.start_logits[start_index] + result.end_logits[end_index]
                     prelim_predictions.append(
                         _PrelimPrediction(
                             feature_index=feature_index,
@@ -159,9 +155,7 @@ def compute_predictions_logits(
             )
         )
 
-        prelim_predictions = sorted(
-            prelim_predictions, key=lambda p: p.score, reverse=True
-        )
+        prelim_predictions = sorted(prelim_predictions, key=lambda p: p.score, reverse=True)
 
         _NbestPrediction = collections.namedtuple(  # pylint: disable=invalid-name
             "NbestPrediction", ["text", "score", "cls_idx"]
@@ -188,30 +182,18 @@ def compute_predictions_logits(
                 tok_text = " ".join(tok_text.split())
                 orig_text = " ".join(orig_tokens)
 
-                final_text = get_final_text(
-                    tok_text, orig_text, do_lower_case, verbose_logging
-                )
+                final_text = get_final_text(tok_text, orig_text, do_lower_case, verbose_logging)
                 if final_text in seen_predictions:
                     continue
 
                 seen_predictions[final_text] = True
-                nbest.append(
-                    _NbestPrediction(
-                        text=final_text, score=pred.score, cls_idx=pred.cls_idx
-                    )
-                )
+                nbest.append(_NbestPrediction(text=final_text, score=pred.score, cls_idx=pred.cls_idx))
             else:
                 text = ["yes", "no", "unknown"]
-                nbest.append(
-                    _NbestPrediction(
-                        text=text[pred.cls_idx], score=pred.score, cls_idx=pred.cls_idx
-                    )
-                )
+                nbest.append(_NbestPrediction(text=text[pred.cls_idx], score=pred.score, cls_idx=pred.cls_idx))
 
         if len(nbest) < 1:
-            nbest.append(
-                _NbestPrediction(text="unknown", score=-float("inf"), cls_idx=CLS_UNK)
-            )
+            nbest.append(_NbestPrediction(text="unknown", score=-float("inf"), cls_idx=CLS_UNK))
 
         assert len(nbest) >= 1
 
@@ -229,9 +211,7 @@ def compute_predictions_logits(
         assert len(nbest_json) >= 1
 
         _id, _turn_id = example["qas_id"].split()
-        all_predictions.append(
-            {"id": _id, "turn_id": int(_turn_id), "answer": confirm_preds(nbest_json)}
-        )
+        all_predictions.append({"id": _id, "turn_id": int(_turn_id), "answer": confirm_preds(nbest_json)})
 
         all_nbest_json[example["qas_id"]] = nbest_json
 
@@ -303,7 +283,7 @@ def get_final_text(pred_text, orig_text, do_lower_case, verbose_logging=False):
     def _strip_spaces(text):
         ns_chars = []
         ns_to_s_map = collections.OrderedDict()
-        for (i, c) in enumerate(text):
+        for i, c in enumerate(text):
             if c == " ":
                 continue
             ns_to_s_map[len(ns_chars)] = i
@@ -341,7 +321,7 @@ def get_final_text(pred_text, orig_text, do_lower_case, verbose_logging=False):
     # We then project the characters in `pred_text` back to `orig_text` using
     # the character-to-character alignment.
     tok_s_to_ns_map = {}
-    for (i, tok_index) in tok_ns_to_s_map.items():
+    for i, tok_index in tok_ns_to_s_map.items():
         tok_s_to_ns_map[tok_index] = i
 
     orig_start_position = None

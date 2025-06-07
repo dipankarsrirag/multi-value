@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-""" Auto Model class. """
+"""Auto Model class."""
 
 import logging
 from collections import OrderedDict
@@ -88,10 +88,7 @@ class AutoModelForConversationalQuestionAnswering(object):
             "Model type should be one of {}.".format(
                 config.__class__,
                 cls.__name__,
-                ", ".join(
-                    c.__name__
-                    for c in MODEL_FOR_CONVERSATIONAL_QUESTION_ANSWERING_MAPPING.keys()
-                ),
+                ", ".join(c.__name__ for c in MODEL_FOR_CONVERSATIONAL_QUESTION_ANSWERING_MAPPING.keys()),
             )
         )
 
@@ -175,18 +172,13 @@ class AutoModelForConversationalQuestionAnswering(object):
             model_class,
         ) in MODEL_FOR_CONVERSATIONAL_QUESTION_ANSWERING_MAPPING.items():
             if isinstance(config, config_class):
-                return model_class.from_pretrained(
-                    pretrained_model_name_or_path, *model_args, config=config, **kwargs
-                )
+                return model_class.from_pretrained(pretrained_model_name_or_path, *model_args, config=config, **kwargs)
 
         raise ValueError(
             "Unrecognized configuration class {} for this kind of AutoModel: {}.\n"
             "Model type should be one of {}.".format(
                 config.__class__,
                 cls.__name__,
-                ", ".join(
-                    c.__name__
-                    for c in MODEL_FOR_CONVERSATIONAL_QUESTION_ANSWERING_MAPPING.keys()
-                ),
+                ", ".join(c.__name__ for c in MODEL_FOR_CONVERSATIONAL_QUESTION_ANSWERING_MAPPING.keys()),
             )
         )

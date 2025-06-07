@@ -1,15 +1,11 @@
 import json
 import os
-import pickle as pkl
 import random
 import re
 import string
-from ast import literal_eval
 from collections import Counter, defaultdict
 
 import inflect
-import lemminflect
-import nltk
 import numpy as np
 import pandas as pd
 import spacy
@@ -18,7 +14,6 @@ from nltk.corpus import cmudict
 from nltk.corpus import wordnet as wn
 from nltk.metrics.distance import edit_distance
 from nltk.stem.wordnet import WordNetLemmatizer
-from tqdm import tqdm
 
 from .inflect.english import English
 
@@ -3484,7 +3479,8 @@ class BaseDialect(object):
             feature_attestation = 1.0
             if rule_name in self.morphosyntax_transforms:
                 feature_attestation = self.morphosyntax_transforms[rule_name]
-            if random.random() < feature_attestation:
+            # if random.random() < feature_attestation:
+            if feature_attestation == 1.0:
                 decided_rules[rule_name] = self.rules[rule_name].copy()
         return decided_rules
 

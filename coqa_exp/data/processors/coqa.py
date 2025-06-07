@@ -24,9 +24,7 @@ CLS_UNK = 2
 CLS_SPAN = 3
 
 
-def _improve_answer_span(
-    doc_tokens, input_start, input_end, tokenizer, orig_answer_text
-):
+def _improve_answer_span(doc_tokens, input_start, input_end, tokenizer, orig_answer_text):
     """Returns tokenized answer spans that better match the annotated answer."""
     tok_answer_text = " ".join(tokenizer.tokenize(orig_answer_text))
 
@@ -43,7 +41,7 @@ def _check_is_max_context(doc_spans, cur_span_index, position):
     """Check if this is the 'max context' doc span for the token."""
     best_score = None
     best_span_index = None
-    for (span_index, doc_span) in enumerate(doc_spans):
+    for span_index, doc_span in enumerate(doc_spans):
         end = doc_span.start + doc_span.length - 1
         if position < doc_span.start:
             continue
@@ -64,9 +62,7 @@ def coqa_convert_example_to_features_init(tokenizer_for_convert):
     tokenizer = tokenizer_for_convert
 
 
-def coqa_convert_example_to_features(
-    example, tokenizer, max_seq_length, doc_stride, max_query_length
-):
+def coqa_convert_example_to_features(example, tokenizer, max_seq_length, doc_stride, max_query_length):
     """Loads a data file into a list of `InputBatch`s."""
     features = []
     query_tokens = []
@@ -88,7 +84,7 @@ def coqa_convert_example_to_features(
     tok_to_orig_index = []
     orig_to_tok_index = []
     all_doc_tokens = []
-    for (i, token) in enumerate(example["doc_tokens"]):
+    for i, token in enumerate(example["doc_tokens"]):
         orig_to_tok_index.append(len(all_doc_tokens))
         sub_tokens = tokenizer.tokenize(token)
         for sub_token in sub_tokens:
@@ -98,9 +94,7 @@ def coqa_convert_example_to_features(
     # rationale part
     tok_r_start_position = orig_to_tok_index[example["rationale_start_position"]]
     if example["rationale_end_position"] < len(example["doc_tokens"]) - 1:
-        tok_r_end_position = (
-            orig_to_tok_index[example["rationale_end_position"] + 1] - 1
-        )
+        tok_r_end_position = orig_to_tok_index[example["rationale_end_position"] + 1] - 1
     else:
         tok_r_end_position = len(all_doc_tokens) - 1
     # rationale part end
@@ -138,7 +132,7 @@ def coqa_convert_example_to_features(
             break
         start_offset += min(length, doc_stride)
 
-    for (doc_span_index, doc_span) in enumerate(doc_spans):
+    for doc_span_index, doc_span in enumerate(doc_spans):
         slice_cls_idx = cls_idx
         tokens = []
         token_to_orig_map = {}
@@ -156,9 +150,7 @@ def coqa_convert_example_to_features(
             split_token_index = doc_span.start + i
             token_to_orig_map[len(tokens)] = tok_to_orig_index[split_token_index]
 
-            is_max_context = _check_is_max_context(
-                doc_spans, doc_span_index, split_token_index
-            )
+            is_max_context = _check_is_max_context(doc_spans, doc_span_index, split_token_index)
             token_is_max_context[len(tokens)] = is_max_context
             tokens.append(all_doc_tokens[split_token_index])
             segment_ids.append(1)
@@ -200,9 +192,9 @@ def coqa_convert_example_to_features(
 
         rationale_mask = [0] * len(input_ids)
         if not out_of_span:
-            rationale_mask[rationale_start_position : rationale_end_position + 1] = [
-                1
-            ] * (rationale_end_position - rationale_start_position + 1)
+            rationale_mask[rationale_start_position : rationale_end_position + 1] = [1] * (
+                rationale_end_position - rationale_start_position + 1
+            )
 
         if cls_idx >= CLS_SPAN:
             # For training, if our document chunk does not contain an annotation
@@ -280,9 +272,7 @@ def coqa_convert_examples_to_features(
     new_features = []
     unique_id = 1000000000
     example_index = 0
-    for example_features in tqdm(
-        features, total=len(features), desc="add example index and unique id"
-    ):
+    for example_features in tqdm(features, total=len(features), desc="add example index and unique id"):
         if not example_features:
             continue
         for example_feature in example_features:
@@ -295,24 +285,14 @@ def coqa_convert_examples_to_features(
     del new_features
     all_input_ids = torch.tensor([f.input_ids for f in features], dtype=torch.long)
     all_input_mask = torch.tensor([f.input_mask for f in features], dtype=torch.long)
-    all_tokentype_ids = torch.tensor(
-        [f.segment_ids for f in features], dtype=torch.long
-    )
+    all_tokentype_ids = torch.tensor([f.segment_ids for f in features], dtype=torch.long)
     if not is_training:
         all_example_index = torch.arange(all_input_ids.size(0), dtype=torch.long)
-        dataset = TensorDataset(
-            all_input_ids, all_tokentype_ids, all_input_mask, all_example_index
-        )
+        dataset = TensorDataset(all_input_ids, all_tokentype_ids, all_input_mask, all_example_index)
     else:
-        all_start_positions = torch.tensor(
-            [f.start_position for f in features], dtype=torch.long
-        )
-        all_end_positions = torch.tensor(
-            [f.end_position for f in features], dtype=torch.long
-        )
-        all_rationale_mask = torch.tensor(
-            [f.rationale_mask for f in features], dtype=torch.long
-        )
+        all_start_positions = torch.tensor([f.start_position for f in features], dtype=torch.long)
+        all_end_positions = torch.tensor([f.end_position for f in features], dtype=torch.long)
+        all_rationale_mask = torch.tensor([f.rationale_mask for f in features], dtype=torch.long)
         all_cls_idx = torch.tensor([f.cls_idx for f in features], dtype=torch.long)
         dataset = TensorDataset(
             all_input_ids,
@@ -505,17 +485,11 @@ class CoqaProcessor(DataProcessor):
         best_span = (len(offsets) - 1, len(offsets) - 1)
         gt = self.normalize_answer(self.pre_proc(ground_truth)).split()
 
-        ls = [
-            i
-            for i in range(len(offsets))
-            if context[offsets[i][0] : offsets[i][1]].lower() in gt
-        ]
+        ls = [i for i in range(len(offsets)) if context[offsets[i][0] : offsets[i][1]].lower() in gt]
 
         for i in range(len(ls)):
             for j in range(i, len(ls)):
-                pred = self.normalize_answer(
-                    self.pre_proc(context[offsets[ls[i]][0] : offsets[ls[j]][1]])
-                ).split()
+                pred = self.normalize_answer(self.pre_proc(context[offsets[ls[i]][0] : offsets[ls[j]][1]])).split()
                 common = Counter(pred) & Counter(gt)
                 num_same = sum(common.values())
                 if num_same > 0:
@@ -586,9 +560,7 @@ class CoqaProcessor(DataProcessor):
         }
         nlp_context = nlp(self.pre_proc(context_str))
         _datum["annotated_context"] = self.process(nlp_context)
-        _datum["raw_context_offsets"] = self.get_raw_context_offsets(
-            _datum["annotated_context"]["word"], context_str
-        )
+        _datum["raw_context_offsets"] = self.get_raw_context_offsets(_datum["annotated_context"]["word"], context_str)
         assert len(datum["questions"]) == len(datum["answers"])
         additional_answers = {}
         if "additional_answers" in datum:
@@ -668,9 +640,7 @@ class CoqaProcessor(DataProcessor):
                 end_position=_qas["answer_span"][1],
                 rationale_start_position=r_start,
                 rationale_end_position=r_end,
-                additional_answers=_qas["additional_answers"]
-                if "additional_answers" in _qas
-                else None,
+                additional_answers=_qas["additional_answers"] if "additional_answers" in _qas else None,
             )
             examples.append(example)
 
@@ -687,9 +657,7 @@ class CoqaResult(object):
         end_logits: The logits corresponding to the end of the answer
     """
 
-    def __init__(
-        self, unique_id, start_logits, end_logits, yes_logits, no_logits, unk_logits
-    ):
+    def __init__(self, unique_id, start_logits, end_logits, yes_logits, no_logits, unk_logits):
         self.unique_id = unique_id
         self.start_logits = start_logits
         self.end_logits = end_logits

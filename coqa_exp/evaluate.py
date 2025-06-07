@@ -2,6 +2,7 @@
 
 The code is based partially on SQuAD 2.0 evaluation script.
 """
+
 import argparse
 import json
 import logging
@@ -32,9 +33,7 @@ domain_mappings = {
 logger = logging.getLogger(__file__)
 logger.setLevel(logging.INFO)
 
-fileHandler = logging.FileHandler(
-    "{}.log".format(datetime.now().strftime("%Y-%m-%d-%H:%M:%S"))
-)
+fileHandler = logging.FileHandler("{}.log".format(datetime.now().strftime("%Y-%m-%d-%H:%M:%S")))
 streamHandler = logging.StreamHandler()
 # connect the logger to the channel
 logger.addHandler(fileHandler)
@@ -43,9 +42,7 @@ logger.addHandler(streamHandler)
 
 class CoQAEvaluator:
     def __init__(self, gold_file):
-        self.gold_data, self.id_to_source = CoQAEvaluator.gold_answers_to_dict(
-            gold_file
-        )
+        self.gold_data, self.id_to_source = CoQAEvaluator.gold_answers_to_dict(gold_file)
 
     @staticmethod
     def gold_answers_to_dict(gold_file):
@@ -62,24 +59,16 @@ class CoQAEvaluator:
             for i, qa in enumerate(questions):
                 qid = qa["turn_id"]
                 if i + 1 != qid:
-                    sys.stderr.write(
-                        "Turn id should match index {}: {}\n".format(i + 1, qa)
-                    )
+                    sys.stderr.write("Turn id should match index {}: {}\n".format(i + 1, qa))
                 gold_answers = []
                 for answers in multiple_answers:
                     answer = answers[i]
                     if qid != answer["turn_id"]:
-                        sys.stderr.write(
-                            "Question turn id does match answer: {} {}\n".format(
-                                qa, answer
-                            )
-                        )
+                        sys.stderr.write("Question turn id does match answer: {} {}\n".format(qa, answer))
                     gold_answers.append(answer["input_text"])
                 key = (story_id, qid)
                 if key in gold_dict:
-                    sys.stderr.write(
-                        "Gold file has duplicate stories: {}".format(source)
-                    )
+                    sys.stderr.write("Gold file has duplicate stories: {}".format(source))
                 gold_dict[key] = gold_answers
         return gold_dict, id_to_source
 
@@ -119,10 +108,7 @@ class CoQAEvaluator:
 
     @staticmethod
     def compute_exact(a_gold, a_pred):
-        return int(
-            CoQAEvaluator.normalize_answer(a_gold)
-            == CoQAEvaluator.normalize_answer(a_pred)
-        )
+        return int(CoQAEvaluator.normalize_answer(a_gold) == CoQAEvaluator.normalize_answer(a_pred))
 
     @staticmethod
     def compute_f1(a_gold, a_pred):
@@ -148,9 +134,7 @@ class CoQAEvaluator:
             for i in range(len(a_gold_list)):
                 # exclude the current answer
                 gold_answers = a_gold_list[0:i] + a_gold_list[i + 1 :]
-                em_sum += max(
-                    CoQAEvaluator.compute_exact(a, a_pred) for a in gold_answers
-                )
+                em_sum += max(CoQAEvaluator.compute_exact(a, a_pred) for a in gold_answers)
                 f1_sum += max(CoQAEvaluator.compute_f1(a, a_pred) for a in gold_answers)
         else:
             em_sum += max(CoQAEvaluator.compute_exact(a, a_pred) for a in a_gold_list)
@@ -174,11 +158,7 @@ class CoQAEvaluator:
         for story_id, turn_id in self.gold_data:
             key = (story_id, turn_id)
             if key not in pred_data:
-                sys.stderr.write(
-                    "Missing prediction for {} and turn_id: {}\n".format(
-                        story_id, turn_id
-                    )
-                )
+                sys.stderr.write("Missing prediction for {} and turn_id: {}\n".format(story_id, turn_id))
                 continue
             a_pred = pred_data[key]
             scores = self.compute_turn_score(story_id, turn_id, a_pred)
@@ -198,23 +178,11 @@ class CoQAEvaluator:
             if len(self.gold_data[key]) > 1:
                 for i in range(len(self.gold_data[key])):
                     # exclude the current answer
-                    gold_answers = (
-                        self.gold_data[key][0:i] + self.gold_data[key][i + 1 :]
-                    )
-                    em_sum += max(
-                        CoQAEvaluator.compute_exact(a, self.gold_data[key][i])
-                        for a in gold_answers
-                    )
-                    f1_sum += max(
-                        CoQAEvaluator.compute_f1(a, self.gold_data[key][i])
-                        for a in gold_answers
-                    )
+                    gold_answers = self.gold_data[key][0:i] + self.gold_data[key][i + 1 :]
+                    em_sum += max(CoQAEvaluator.compute_exact(a, self.gold_data[key][i]) for a in gold_answers)
+                    f1_sum += max(CoQAEvaluator.compute_f1(a, self.gold_data[key][i]) for a in gold_answers)
             else:
-                exit(
-                    "Gold answers should be multiple: {}={}".format(
-                        key, self.gold_data[key]
-                    )
-                )
+                exit("Gold answers should be multiple: {}={}".format(key, self.gold_data[key]))
             exact_scores[key] = em_sum / len(self.gold_data[key])
             f1_scores[key] = f1_sum / len(self.gold_data[key])
         return exact_scores, f1_scores
@@ -232,12 +200,8 @@ class CoQAEvaluator:
     def model_performance(self, pred_data):
         exact_scores, f1_scores = self.get_raw_scores(pred_data)
         base_results = self.get_domain_scores(exact_scores, f1_scores)
-        print(
-            self.get_overall_em(list(exact_scores.values()), list(f1_scores.values()))
-        )
-        print(
-            self.get_overall_f1(list(exact_scores.values()), list(f1_scores.values()))
-        )
+        print(self.get_overall_em(list(exact_scores.values()), list(f1_scores.values())))
+        print(self.get_overall_f1(list(exact_scores.values()), list(f1_scores.values())))
         rng = np.random.default_rng(12345)
         res = bootstrap(
             (list(exact_scores.values()), list(f1_scores.values())),
@@ -285,15 +249,11 @@ class CoQAEvaluator:
             domain = domain_mappings[source]
             scores[domain] = {}
             scores[domain]["em"] = round(
-                sources[source]["em_total"]
-                / max(1, sources[source]["turn_count"])
-                * 100,
+                sources[source]["em_total"] / max(1, sources[source]["turn_count"]) * 100,
                 1,
             )
             scores[domain]["f1"] = round(
-                sources[source]["f1_total"]
-                / max(1, sources[source]["turn_count"])
-                * 100,
+                sources[source]["f1_total"] / max(1, sources[source]["turn_count"]) * 100,
                 1,
             )
             scores[domain]["turns"] = sources[source]["turn_count"]

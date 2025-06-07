@@ -13,7 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-""" Finetuning the library models for sequence classification on GLUE."""
+"""Finetuning the library models for sequence classification on GLUE."""
 # You can also adapt this script on your own text classification task. Pointers for this are left as comments.
 
 import logging
@@ -89,10 +89,7 @@ class DataTrainingArguments:
 
     task_name: Optional[str] = field(
         default=None,
-        metadata={
-            "help": "The name of the task to train on: "
-            + ", ".join(task_to_keys.keys())
-        },
+        metadata={"help": "The name of the task to train on: " + ", ".join(task_to_keys.keys())},
     )
     dataset_name: Optional[str] = field(
         default=None,
@@ -121,16 +118,12 @@ class DataTrainingArguments:
 
     combine_sae: bool = field(
         default=False,
-        metadata={
-            "help": "Combine Training Data from SAE and Selected Dialect Transform"
-        },
+        metadata={"help": "Combine Training Data from SAE and Selected Dialect Transform"},
     )
 
     dataset_config_name: Optional[str] = field(
         default=None,
-        metadata={
-            "help": "The configuration name of the dataset to use (via the datasets library)."
-        },
+        metadata={"help": "The configuration name of the dataset to use (via the datasets library)."},
     )
     max_seq_length: int = field(
         default=128,
@@ -198,16 +191,11 @@ class DataTrainingArguments:
         if self.task_name is not None:
             self.task_name = self.task_name.lower()
             if self.task_name not in task_to_keys.keys():
-                raise ValueError(
-                    "Unknown task, you should pick one in "
-                    + ",".join(task_to_keys.keys())
-                )
+                raise ValueError("Unknown task, you should pick one in " + ",".join(task_to_keys.keys()))
         elif self.dataset_name is not None:
             pass
         elif self.train_file is None or self.validation_file is None:
-            raise ValueError(
-                "Need either a GLUE task, a training/validation file or a dataset name."
-            )
+            raise ValueError("Need either a GLUE task, a training/validation file or a dataset name.")
         else:
             train_extension = self.train_file.split(".")[-1]
             assert train_extension in [
@@ -227,39 +215,27 @@ class ModelArguments:
     """
 
     model_name_or_path: str = field(
-        metadata={
-            "help": "Path to pretrained model or model identifier from huggingface.co/models"
-        }
+        metadata={"help": "Path to pretrained model or model identifier from huggingface.co/models"}
     )
     config_name: Optional[str] = field(
         default=None,
-        metadata={
-            "help": "Pretrained config name or path if not the same as model_name"
-        },
+        metadata={"help": "Pretrained config name or path if not the same as model_name"},
     )
     tokenizer_name: Optional[str] = field(
         default=None,
-        metadata={
-            "help": "Pretrained tokenizer name or path if not the same as model_name"
-        },
+        metadata={"help": "Pretrained tokenizer name or path if not the same as model_name"},
     )
     cache_dir: Optional[str] = field(
         default=None,
-        metadata={
-            "help": "Where do you want to store the pretrained models downloaded from huggingface.co"
-        },
+        metadata={"help": "Where do you want to store the pretrained models downloaded from huggingface.co"},
     )
     use_fast_tokenizer: bool = field(
         default=True,
-        metadata={
-            "help": "Whether to use one of the fast tokenizer (backed by the tokenizers library) or not."
-        },
+        metadata={"help": "Whether to use one of the fast tokenizer (backed by the tokenizers library) or not."},
     )
     model_revision: str = field(
         default="main",
-        metadata={
-            "help": "The specific model version to use (can be a branch name, tag name or commit id)."
-        },
+        metadata={"help": "The specific model version to use (can be a branch name, tag name or commit id)."},
     )
     use_auth_token: bool = field(
         default=False,
@@ -272,9 +248,7 @@ class ModelArguments:
     )
     ignore_mismatched_sizes: bool = field(
         default=False,
-        metadata={
-            "help": "Will enable to load a pretrained model whose head dimensions are different."
-        },
+        metadata={"help": "Will enable to load a pretrained model whose head dimensions are different."},
     )
 
 
@@ -328,20 +302,14 @@ def main():
 
     # Detecting last checkpoint.
     last_checkpoint = None
-    if (
-        os.path.isdir(training_args.output_dir)
-        and training_args.do_train
-        and not training_args.overwrite_output_dir
-    ):
+    if os.path.isdir(training_args.output_dir) and training_args.do_train and not training_args.overwrite_output_dir:
         last_checkpoint = get_last_checkpoint(training_args.output_dir)
         if last_checkpoint is None and len(os.listdir(training_args.output_dir)) > 0:
             raise ValueError(
                 f"Output directory ({training_args.output_dir}) already exists and is not empty. "
                 "Use --overwrite_output_dir to overcome."
             )
-        elif (
-            last_checkpoint is not None and training_args.resume_from_checkpoint is None
-        ):
+        elif last_checkpoint is not None and training_args.resume_from_checkpoint is None:
             logger.info(
                 f"Checkpoint detected, resuming training at {last_checkpoint}. To avoid this behavior, change "
                 "the `--output_dir` or add `--overwrite_output_dir` to train from scratch."
@@ -400,9 +368,7 @@ def main():
                 ), "`test_file` should have the same extension (csv or json) as `train_file`."
                 data_files["test"] = data_args.test_file
             else:
-                raise ValueError(
-                    "Need either a GLUE task or a test file for `do_predict`."
-                )
+                raise ValueError("Need either a GLUE task or a test file for `do_predict`.")
 
         for key in data_files.keys():
             logger.info(f"load a local file for {key}: {data_files[key]}")
@@ -454,9 +420,7 @@ def main():
     # In distributed training, the .from_pretrained methods guarantee that only one local process can concurrently
     # download model & vocab.
     config = AutoConfig.from_pretrained(
-        model_args.config_name
-        if model_args.config_name
-        else model_args.model_name_or_path,
+        model_args.config_name if model_args.config_name else model_args.model_name_or_path,
         num_labels=num_labels,
         finetuning_task=data_args.task_name,
         cache_dir=model_args.cache_dir,
@@ -464,9 +428,7 @@ def main():
         use_auth_token=True if model_args.use_auth_token else None,
     )
     tokenizer = AutoTokenizer.from_pretrained(
-        model_args.tokenizer_name
-        if model_args.tokenizer_name
-        else model_args.model_name_or_path,
+        model_args.tokenizer_name if model_args.tokenizer_name else model_args.model_name_or_path,
         cache_dir=model_args.cache_dir,
         use_fast=model_args.use_fast_tokenizer,
         revision=model_args.model_revision,
@@ -496,9 +458,7 @@ def main():
             model.add_classification_head(
                 data_args.task_name or "glue",
                 num_labels=num_labels,
-                id2label={i: v for i, v in enumerate(label_list)}
-                if num_labels > 0
-                else None,
+                id2label={i: v for i, v in enumerate(label_list)} if num_labels > 0 else None,
             )
         else:
             model.add_classification_head(
@@ -562,13 +522,8 @@ def main():
         sentence1_key, sentence2_key = task_to_keys[data_args.task_name]
     else:
         # Again, we try to have some nice defaults but don't hesitate to tweak to your use case.
-        non_label_column_names = [
-            name for name in raw_datasets["train"].column_names if name != "label"
-        ]
-        if (
-            "sentence1" in non_label_column_names
-            and "sentence2" in non_label_column_names
-        ):
+        non_label_column_names = [name for name in raw_datasets["train"].column_names if name != "label"]
+        if "sentence1" in non_label_column_names and "sentence2" in non_label_column_names:
             sentence1_key, sentence2_key = "sentence1", "sentence2"
         else:
             if len(non_label_column_names) >= 2:
@@ -593,9 +548,7 @@ def main():
         # Some have all caps in their config, some don't.
         label_name_to_id = {k.lower(): v for k, v in model.config.label2id.items()}
         if list(sorted(label_name_to_id.keys())) == list(sorted(label_list)):
-            label_to_id = {
-                i: int(label_name_to_id[label_list[i]]) for i in range(num_labels)
-            }
+            label_to_id = {i: int(label_name_to_id[label_list[i]]) for i in range(num_labels)}
         else:
             logger.warning(
                 "Your model seems to have been trained with labels, but they don't match the dataset: ",
@@ -642,18 +595,12 @@ def main():
             elif dialect_name == "NgE":
                 dialect = NigerianDialect(morphosyntax=True)
             if dialect:
-                conversions1 = [
-                    dialect.convert_sae_to_dialect(example)
-                    for example in examples[sentence1_key]
-                ]
+                conversions1 = [dialect.convert_sae_to_dialect(example) for example in examples[sentence1_key]]
                 examples[sentence1_key] = conversions1
                 if sentence2_key is None:
                     return examples
                 else:
-                    conversions2 = [
-                        dialect.convert_sae_to_dialect(example)
-                        for example in examples[sentence2_key]
-                    ]
+                    conversions2 = [dialect.convert_sae_to_dialect(example) for example in examples[sentence2_key]]
                     examples[sentence2_key] = conversions2
                     return examples
             else:
@@ -666,19 +613,13 @@ def main():
     def preprocess_function(examples):
         # Tokenize the texts
         args = (
-            (examples[sentence1_key],)
-            if sentence2_key is None
-            else (examples[sentence1_key], examples[sentence2_key])
+            (examples[sentence1_key],) if sentence2_key is None else (examples[sentence1_key], examples[sentence2_key])
         )
-        result = tokenizer(
-            *args, padding=padding, max_length=max_seq_length, truncation=True
-        )
+        result = tokenizer(*args, padding=padding, max_length=max_seq_length, truncation=True)
 
         # Map labels to IDs (not necessary for GLUE tasks)
         if label_to_id is not None and "label" in examples:
-            result["label"] = [
-                (label_to_id[l] if l != -1 else -1) for l in examples["label"]
-            ]
+            result["label"] = [(label_to_id[l] if l != -1 else -1) for l in examples["label"]]
         return result
 
     with training_args.main_process_first(desc="dataset map pre-processing"):
@@ -729,32 +670,19 @@ def main():
     if training_args.do_eval and training_args.do_train:
         sys.exit()
     if training_args.do_eval:
-        if (
-            "validation" not in raw_datasets
-            and "validation_matched" not in raw_datasets
-        ):
+        if "validation" not in raw_datasets and "validation_matched" not in raw_datasets:
             raise ValueError("--do_eval requires a validation dataset")
-        eval_dataset = raw_datasets[
-            "validation_matched" if data_args.task_name == "mnli" else "validation"
-        ]
+        eval_dataset = raw_datasets["validation_matched" if data_args.task_name == "mnli" else "validation"]
         if data_args.max_eval_samples is not None:
             max_eval_samples = min(len(eval_dataset), data_args.max_eval_samples)
             eval_dataset = eval_dataset.select(range(max_eval_samples))
 
-    if (
-        training_args.do_predict
-        or data_args.task_name is not None
-        or data_args.test_file is not None
-    ):
+    if training_args.do_predict or data_args.task_name is not None or data_args.test_file is not None:
         if "test" not in raw_datasets and "test_matched" not in raw_datasets:
             raise ValueError("--do_predict requires a test dataset")
-        predict_dataset = raw_datasets[
-            "test_matched" if data_args.task_name == "mnli" else "test"
-        ]
+        predict_dataset = raw_datasets["test_matched" if data_args.task_name == "mnli" else "test"]
         if data_args.max_predict_samples is not None:
-            max_predict_samples = min(
-                len(predict_dataset), data_args.max_predict_samples
-            )
+            max_predict_samples = min(len(predict_dataset), data_args.max_predict_samples)
             predict_dataset = predict_dataset.select(range(max_predict_samples))
 
     # Log a few random samples from the training set:
@@ -814,9 +742,7 @@ def main():
         train_result = trainer.train(resume_from_checkpoint=checkpoint)
         metrics = train_result.metrics
         max_train_samples = (
-            data_args.max_train_samples
-            if data_args.max_train_samples is not None
-            else len(train_dataset)
+            data_args.max_train_samples if data_args.max_train_samples is not None else len(train_dataset)
         )
         metrics["train_samples"] = min(max_train_samples, len(train_dataset))
 
@@ -842,9 +768,7 @@ def main():
             metrics = trainer.evaluate(eval_dataset=eval_dataset)
 
             max_eval_samples = (
-                data_args.max_eval_samples
-                if data_args.max_eval_samples is not None
-                else len(eval_dataset)
+                data_args.max_eval_samples if data_args.max_eval_samples is not None else len(eval_dataset)
             )
             metrics["eval_samples"] = min(max_eval_samples, len(eval_dataset))
 
@@ -854,18 +778,14 @@ def main():
                 combined.update(metrics)
 
             trainer.log_metrics("eval", metrics)
-            trainer.save_metrics(
-                "eval", combined if task is not None and "mnli" in task else metrics
-            )
+            trainer.save_metrics("eval", combined if task is not None and "mnli" in task else metrics)
 
     if training_args.do_predict:
         logger.info("*** Predict ***")
         metrics = trainer.evaluate(eval_dataset=predict_dataset)
         print(metrics)
         max_eval_samples = (
-            data_args.max_eval_samples
-            if data_args.max_eval_samples is not None
-            else len(predict_dataset)
+            data_args.max_eval_samples if data_args.max_eval_samples is not None else len(predict_dataset)
         )
         metrics["eval_samples"] = min(max_eval_samples, len(predict_dataset))
 
@@ -875,9 +795,7 @@ def main():
             combined.update(metrics)
 
         trainer.log_metrics("pred", metrics)
-        trainer.save_metrics(
-            "pred", combined if task is not None and "mnli" in task else metrics
-        )
+        trainer.save_metrics("pred", combined if task is not None and "mnli" in task else metrics)
         # Loop to handle MNLI double evaluation (matched, mis-matched)
         tasks = [data_args.task_name]
         predict_datasets = [predict_dataset]
@@ -888,18 +806,10 @@ def main():
         for predict_dataset, task in zip(predict_datasets, tasks):
             # Removing the `label` columns because it contains -1 and Trainer won't like that.
             predict_dataset = predict_dataset.remove_columns("label")
-            predictions = trainer.predict(
-                predict_dataset, metric_key_prefix="predict"
-            ).predictions
-            predictions = (
-                np.squeeze(predictions)
-                if is_regression
-                else np.argmax(predictions, axis=1)
-            )
+            predictions = trainer.predict(predict_dataset, metric_key_prefix="predict").predictions
+            predictions = np.squeeze(predictions) if is_regression else np.argmax(predictions, axis=1)
 
-            output_predict_file = os.path.join(
-                training_args.output_dir, f"predict_results_{task}.txt"
-            )
+            output_predict_file = os.path.join(training_args.output_dir, f"predict_results_{task}.txt")
             if trainer.is_world_process_zero():
                 with open(output_predict_file, "w") as writer:
                     logger.info(f"***** Predict results {task} *****")

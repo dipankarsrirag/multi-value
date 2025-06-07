@@ -9,9 +9,7 @@ from transformers.adapters.mixins.bert import (
 )
 
 
-class BertForConversationalQuestionAnswering(
-    BertModelWithHeadsAdaptersMixin, BertPreTrainedModel
-):
+class BertForConversationalQuestionAnswering(BertModelWithHeadsAdaptersMixin, BertPreTrainedModel):
     def __init__(
         self,
         config,
@@ -22,16 +20,10 @@ class BertForConversationalQuestionAnswering(
         super(BertForConversationalQuestionAnswering, self).__init__(config)
         self.bert = BertModel(config)
         hidden_size = config.hidden_size
-        self.rationale_l = MultiLinearLayer(
-            n_layers, hidden_size, hidden_size, 1, activation
-        )
-        self.logits_l = MultiLinearLayer(
-            n_layers, hidden_size, hidden_size, 2, activation
-        )
+        self.rationale_l = MultiLinearLayer(n_layers, hidden_size, hidden_size, 1, activation)
+        self.logits_l = MultiLinearLayer(n_layers, hidden_size, hidden_size, 2, activation)
         self.unk_l = MultiLinearLayer(n_layers, hidden_size, hidden_size, 1, activation)
-        self.attention_l = MultiLinearLayer(
-            n_layers, hidden_size, hidden_size, 1, activation
-        )
+        self.attention_l = MultiLinearLayer(n_layers, hidden_size, hidden_size, 1, activation)
         self.yn_l = MultiLinearLayer(n_layers, hidden_size, hidden_size, 2, activation)
         self.beta = beta
 
@@ -101,12 +93,8 @@ class BertForConversationalQuestionAnswering(
                 end_positions + cls_idx,
             )
 
-            new_start_logits = torch.cat(
-                (yes_logits, no_logits, unk_logits, start_logits), dim=-1
-            )
-            new_end_logits = torch.cat(
-                (yes_logits, no_logits, unk_logits, end_logits), dim=-1
-            )
+            new_start_logits = torch.cat((yes_logits, no_logits, unk_logits, start_logits), dim=-1)
+            new_end_logits = torch.cat((yes_logits, no_logits, unk_logits, end_logits), dim=-1)
 
             # If we are on multi-GPU, split add a dimension
             if len(start_positions.size()) > 1:
@@ -129,13 +117,9 @@ class BertForConversationalQuestionAnswering(
 
             # use rationale span to help calculate loss
             rationale_mask = rationale_mask.type(final_hidden.dtype)
-            rationale_loss = -alpha * (
-                (1 - rationale_logits) ** gamma
-            ) * rationale_mask * torch.log(rationale_logits + 1e-7) - (1 - alpha) * (
-                rationale_logits**gamma
-            ) * (
-                1 - rationale_mask
-            ) * torch.log(
+            rationale_loss = -alpha * ((1 - rationale_logits) ** gamma) * rationale_mask * torch.log(
+                rationale_logits + 1e-7
+            ) - (1 - alpha) * (rationale_logits**gamma) * (1 - rationale_mask) * torch.log(
                 1 - rationale_logits + 1e-7
             )
 

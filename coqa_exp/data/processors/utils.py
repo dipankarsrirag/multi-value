@@ -127,7 +127,7 @@ class DataProcessor(object):
 
 
 class SingleSentenceClassificationProcessor(DataProcessor):
-    """ Generic processor for a single sentence classification data set."""
+    """Generic processor for a single sentence classification data set."""
 
     def __init__(self, labels=None, examples=None, mode="classification", verbose=False):
         self.labels = [] if labels is None else labels
@@ -183,7 +183,7 @@ class SingleSentenceClassificationProcessor(DataProcessor):
         texts = []
         labels = []
         ids = []
-        for (i, line) in enumerate(lines):
+        for i, line in enumerate(lines):
             texts.append(line[column_text])
             labels.append(line[column_label])
             if column_id is not None:
@@ -207,7 +207,7 @@ class SingleSentenceClassificationProcessor(DataProcessor):
             labels = [None] * len(texts_or_text_and_labels)
         examples = []
         added_labels = set()
-        for (text_or_text_and_label, label, guid) in zip(texts_or_text_and_labels, labels, ids):
+        for text_or_text_and_label, label, guid in zip(texts_or_text_and_labels, labels, ids):
             if isinstance(text_or_text_and_label, (tuple, list)) and label is None:
                 text, label = text_or_text_and_label
             else:
@@ -265,19 +265,21 @@ class SingleSentenceClassificationProcessor(DataProcessor):
         label_map = {label: i for i, label in enumerate(self.labels)}
 
         all_input_ids = []
-        for (ex_index, example) in enumerate(self.examples):
+        for ex_index, example in enumerate(self.examples):
             if ex_index % 10000 == 0:
                 logger.info("Tokenizing example %d", ex_index)
 
             input_ids = tokenizer.encode(
-                example.text_a, add_special_tokens=True, max_length=min(max_length, tokenizer.max_len),
+                example.text_a,
+                add_special_tokens=True,
+                max_length=min(max_length, tokenizer.max_len),
             )
             all_input_ids.append(input_ids)
 
         batch_length = max(len(input_ids) for input_ids in all_input_ids)
 
         features = []
-        for (ex_index, (input_ids, example)) in enumerate(zip(all_input_ids, self.examples)):
+        for ex_index, (input_ids, example) in enumerate(zip(all_input_ids, self.examples)):
             if ex_index % 10000 == 0:
                 logger.info("Writing example %d/%d" % (ex_index, len(self.examples)))
             # The mask has 1 for real tokens and 0 for padding tokens. Only real
